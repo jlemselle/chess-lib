@@ -1,17 +1,26 @@
 export enum Player {
-    WHITE, BLACK
+  WHITE,
+  BLACK,
 }
 
 export enum PieceType {
-    PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING
+  PAWN,
+  KNIGHT,
+  BISHOP,
+  ROOK,
+  QUEEN,
+  KING,
 }
 
 export interface Piece {
-    type: PieceType,
-    player: Player
+  type: PieceType;
+  player: Player;
+  position: number;
 }
 
 export const firstMove = Player.WHITE;
+
+type Position = Piece[];
 
 export const startingPosition = pos(`
     rnbqkbnr
@@ -24,33 +33,52 @@ export const startingPosition = pos(`
     RNBQKBNR
 `);
 
-/**
- * Create a chess board from a plain string.
- * @param raw 
- */
-export function pos(raw: string): (Piece | undefined)[] {
-    const whitespaceRemoved = raw.replace(/\s/gm, '');
-    return Array(...whitespaceRemoved).map(c => charToPiece(c));
+export function possibleMoves(from: Position): Position[] {
+  return [];
 }
 
-function charToPiece(char: string): Piece | undefined {
-    const type =
-        ['P', 'p'].includes(char) ? PieceType.PAWN
-            : ['N', 'n'].includes(char) ? PieceType.KNIGHT
-                : ['B', 'b'].includes(char) ? PieceType.BISHOP
-                    : ['R', 'r'].includes(char) ? PieceType.ROOK
-                        : ['Q', 'q'].includes(char) ? PieceType.QUEEN
-                            : ['K', 'k'].includes(char) ? PieceType.KING
-                                : undefined
+/**
+ * Create a chess board from a plain string.
+ * @param raw
+ */
+export function pos(raw: string): Position {
+  return Array.from(
+    raw.split("\n").reverse().join().replace(/\s/g, "")
+  ).flatMap((char, index) => charToPiece(char, index));
+}
 
-    const player =
-        ['P', 'N', 'B', 'R', 'Q', 'K'].includes(char) ? Player.WHITE
-            : ['p', 'n', 'b', 'r', 'q', 'k'].includes(char) ? Player.BLACK
-                : undefined;
+function charToPiece(char: string, index: number): Piece[] {
+  const type = charToPieceType(char);
+  const player = charToPlayer(char);
+  const position = 1 << index;
 
-    if (type !== undefined && player !== undefined) {
-        return { type, player }
-    }
+  if (type !== undefined && player !== undefined) {
+    return [{ type, player, position }];
+  }
 
-    return undefined;
+  return [];
+}
+
+function charToPieceType(char: string): PieceType | undefined {
+  return ["P", "p"].includes(char)
+    ? PieceType.PAWN
+    : ["N", "n"].includes(char)
+    ? PieceType.KNIGHT
+    : ["B", "b"].includes(char)
+    ? PieceType.BISHOP
+    : ["R", "r"].includes(char)
+    ? PieceType.ROOK
+    : ["Q", "q"].includes(char)
+    ? PieceType.QUEEN
+    : ["K", "k"].includes(char)
+    ? PieceType.KING
+    : undefined;
+}
+
+function charToPlayer(char: string): Player | undefined {
+  return ["P", "N", "B", "R", "Q", "K"].includes(char)
+    ? Player.WHITE
+    : ["p", "n", "b", "r", "q", "k"].includes(char)
+    ? Player.BLACK
+    : undefined;
 }
